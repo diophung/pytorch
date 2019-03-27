@@ -81,6 +81,7 @@ class CAFFE2_API Context {
   bool hasXLA() const {
     return c10::impl::hasDeviceGuardImpl(at::DeviceType::XLA);
   }
+
   // defined in header so that getNonVariableType has ability to inline
   // call_once check. getNonVariableType is called fairly frequently
   THCState* lazyInitCUDA() {
@@ -89,6 +90,9 @@ class CAFFE2_API Context {
       generator_registry[static_cast<int>(DeviceType::CUDA)] =
         detail::getCUDAHooks().initCUDAGenerator(this);
       detail::getCUDAHooks().registerCUDATypes(this);
+      if (hasMAGMA()) {
+	THCMagma_init(thc_state);
+      }
     });
     return thc_state.get();
   }
